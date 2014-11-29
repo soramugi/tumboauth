@@ -1,9 +1,11 @@
 #!/usr/bin/env ruby
 require 'sinatra'
 require 'haml'
-require "oauth"
+require 'oauth'
 
-set :sessions, true
+configure do
+  enable :sessions
+end
 
 get '/' do
   haml :index
@@ -13,9 +15,15 @@ post '/redirect' do
   consumer = OAuth::Consumer.new(
     params[:consumer],
     params[:secret],
-    {site: "https://api.tumblr.com"}
+    {
+      :site => 'http://www.tumblr.com',
+      :request_token_path => '/oauth/request_token',
+      :authorize_path => '/oauth/authorize',
+      :access_token_path => '/oauth/access_token',
+      :http_method => :get
+    }
   )
-  request_token = consumer.get_request_token
+  request_token = consumer.get_request_token(:exclude_callback => true)
   session[:request_token] = request_token
   redirect request_token.authorize_url
 end
